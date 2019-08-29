@@ -16,4 +16,4 @@ install:
   - docker run -d $OS /bin/sh -c "provision container if you do not have a prebuilt image and are instead using base images"
 
 script:
-  - docker run -d $OS /bin/sh -c "ansible tests"
+  - docker run -d $OS /bin/sh -c "source env.sh"
