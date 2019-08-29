@@ -1,0 +1,19 @@
+# setup environment
+dist: trusty
+sudo: required
+language: python
+
+# setup container matrix
+matrix:
+  include:
+    - env: OS='ubuntu:14.04'
+    - env: OS='centos:7'
+
+before_install:
+  - docker pull $OS
+
+install:
+  - docker run -d $OS /bin/sh -c "provision container if you do not have a prebuilt image and are instead using base images"
+
+script:
+  - docker run -d $OS /bin/sh -c "ansible tests"
