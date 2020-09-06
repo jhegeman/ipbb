@@ -122,11 +122,7 @@ def gendecoders(env, aCheckUpToDate, aForce):
         if aCheckUpToDate:
             raise SystemExit(-1)
 
-<<<<<<< HEAD
-        if not aAssumeYes:
-=======
         if not aForce:
->>>>>>> upstream/dev/master
             confirm('Do you want to continue?', abort=True)
         for lDecoder, lTarget in lUpdatedDecoders:
             print(sh.cp('-av', lDecoder, lTarget))

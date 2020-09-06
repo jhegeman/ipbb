@@ -31,8 +31,4 @@ def gendecoders(env, aCheckUpToDate, aForce):
         env (`obj`): Click context
     """
     from ..cmds.ipbus import gendecoders
-<<<<<<< HEAD
-    gendecoders(env, aCheckUpToDate, aAssumeYes)
-=======
     gendecoders(env, aCheckUpToDate, aForce)
->>>>>>> upstream/dev/master
