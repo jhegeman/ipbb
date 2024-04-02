@@ -463,13 +463,27 @@ class DepFileParser(object):
         self._depregistry[lDepFilePath] = lCurrentFile
 
         with open(lDepFilePath) as lDepFile:
-            for lLineNr, lLine in enumerate(lDepFile):
+            lLinePrev = ""
+            for lLineNr, lLineRaw in enumerate(lDepFile):
 
                 lDepInfo = (lCurrentFile.full_path(), lLineNr)
 
                 # --------------------------------------------------------------
                 # Pre-processing
                 try:
+                    # See if this is a split line or not.
+                    LINE_SPLIT_CHARACTER = "\\"
+                    if lLineRaw.strip().endswith(LINE_SPLIT_CHARACTER):
+                        lLinePrev += lLineRaw.strip()[:-1]
+                        continue
+                    else:
+                        lLine = (lLinePrev.strip() + " " + lLineRaw.strip()).strip()
+                        if lLinePrev:
+                            print(f"DEBUG JGH '{lLine}'")
+                            import pdb
+                            pdb.set_trace()
+                        lLinePrev = ""
+
                     # Sanitize/drop comments
                     lLine = self._line_drop_Comments(lLine, lDepInfo)
                     if not lLine:
