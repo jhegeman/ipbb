@@ -288,10 +288,8 @@ def git(ictx, repo, branch_or_tag, revision, dest, depth):
     # checkout out a revision should have been handled at the CLI
     # option handling stage.
     if revision is not None:
-        if dest is None:
-            dest = pathlib.Path(repo).stem
-        sh.git('init', dest, _out=sys.stdout, _cwd=ictx.srcdir)
-        sh.git('remote', 'add', repo, _out=sys.stdout, _cwd=ictx.srcdir)
+        sh.git('init', lRepoName, _out=sys.stdout, _cwd=ictx.srcdir)
+        sh.git('remote', 'add', 'origin', repo, _out=sys.stdout, _cwd=lRepoLocalPath)
         cprint('Fetching & checking out revision [blue]{}[/blue]'.format(revision))
         try:
             lFetchArgs = ['fetch', 'origin', revision, '-q']
@@ -300,7 +298,10 @@ def git(ictx, repo, branch_or_tag, revision, dest, depth):
             sh.git(*lFetchArgs, _out=sys.stdout, _cwd=lRepoLocalPath)
             sh.git('checkout', revision, '-q', _out=sys.stdout, _cwd=lRepoLocalPath)
         except Exception as err:
-            click.ClickException("Failed to check out requested revision.")
+            if len(revision) < 40:
+                raise click.ClickException("Failed to check out requested revision. Please provide the full commit SHA (40 chars)")
+            else:
+                raise click.ClickException("Failed to check out requested revision.")
     else:
         lCloneArgs = ['clone', repo]
 
