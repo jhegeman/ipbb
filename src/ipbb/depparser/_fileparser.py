@@ -463,13 +463,27 @@ class DepFileParser(object):
         self._depregistry[lDepFilePath] = lCurrentFile
 
         with open(lDepFilePath) as lDepFile:
-            for lLineNr, lLine in enumerate(lDepFile):
+            lLinePrev = ""
+            for lLineNr, lLineRaw in enumerate(lDepFile):
 
                 lDepInfo = (lCurrentFile.full_path(), lLineNr)
 
                 # --------------------------------------------------------------
                 # Pre-processing
                 try:
+                    # See if this is a split line or not.
+                    LINE_SPLIT_CHARACTER = "\\"
+                    lLineRawStripped = lLineRaw.rstrip()
+                    if lLineRawStripped.endswith(LINE_SPLIT_CHARACTER):
+                        if lLinePrev:
+                            lLinePrev = lLinePrev + " " + lLineRawStripped[:-1].strip()
+                        else:
+                            lLinePrev = lLineRawStripped[:-1].rstrip()
+                        continue
+                    else:
+                        lLine = lLinePrev + " " + lLineRawStripped.strip()
+                        lLinePrev = ""
+
                     # Sanitize/drop comments
                     lLine = self._line_drop_Comments(lLine, lDepInfo)
                     if not lLine:
