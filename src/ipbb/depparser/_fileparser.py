@@ -473,11 +473,15 @@ class DepFileParser(object):
                 try:
                     # See if this is a split line or not.
                     LINE_SPLIT_CHARACTER = "\\"
-                    if lLineRaw.strip().endswith(LINE_SPLIT_CHARACTER):
-                        lLinePrev += lLineRaw.strip()[:-1]
+                    lLineRawStripped = lLineRaw.rstrip()
+                    if lLineRawStripped.endswith(LINE_SPLIT_CHARACTER):
+                        if lLinePrev:
+                            lLinePrev = lLinePrev + " " + lLineRawStripped[:-1].strip()
+                        else:
+                            lLinePrev = lLineRawStripped[:-1].rstrip()
                         continue
                     else:
-                        lLine = (lLinePrev.strip() + " " + lLineRaw.strip()).strip()
+                        lLine = lLinePrev + " " + lLineRawStripped.strip()
                         lLinePrev = ""
 
                     # Sanitize/drop comments
