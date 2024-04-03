@@ -478,10 +478,6 @@ class DepFileParser(object):
                         continue
                     else:
                         lLine = (lLinePrev.strip() + " " + lLineRaw.strip()).strip()
-                        if lLinePrev:
-                            print(f"DEBUG JGH '{lLine}'")
-                            import pdb
-                            pdb.set_trace()
                         lLinePrev = ""
 
                     # Sanitize/drop comments
