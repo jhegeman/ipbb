@@ -295,11 +295,7 @@ def git(ictx, repo, branch_or_tag, revision, dest, depth):
     # NOTE: The mutual exclusivity of checking out a branch and
     # checkout out a revision should have been handled at the CLI
     # option handling stage.
-    if branch_or_tag is not None:
-        cprint(f'Cloning branch/tag [blue]{branch_or_tag}[/blue]')
-        sh.git(*lCloneArgs, f'--branch={branch_or_tag}', _out=sys.stdout, _cwd=ictx.srcdir)
-
-    elif revision is not None:
+    if revision is not None:
         sh.git(*lCloneArgs, _out=sys.stdout, _cwd=ictx.srcdir)
         cprint('Checking out revision [blue]{}[/blue]'.format(revision))
         try:
@@ -315,6 +311,13 @@ def git(ictx, repo, branch_or_tag, revision, dest, depth):
             # hard reference could be found.)
             cprint("Failed to check out requested revision." \
                   " Staying on default branch.", style='red')
+    else:
+        if branch_or_tag is None:
+            cprint(f'Cloning default branch')
+        else:
+            lCloneArgs.append(f'--branch={branch_or_tag}')
+            cprint(f'Cloning branch/tag [blue]{branch_or_tag}[/blue]')
+        sh.git(*lCloneArgs, _out=sys.stdout, _cwd=ictx.srcdir)
 
     cprint(
         'Repository \'{}\' successfully cloned to:\n  {}'.format(
