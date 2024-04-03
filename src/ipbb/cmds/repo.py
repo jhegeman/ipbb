@@ -300,12 +300,7 @@ def git(ictx, repo, branch_or_tag, revision, dest, depth):
             sh.git(*lFetchArgs, _out=sys.stdout, _cwd=lRepoLocalPath)
             sh.git('checkout', revision, '-q', _out=sys.stdout, _cwd=lRepoLocalPath)
         except Exception as err:
-            # NOTE: The assumption here is that the failed checkout
-            # did not alter the state of the cloned repo in any
-            # way. (This appears to be the case from experience but no
-            # hard reference could be found.)
-            cprint("Failed to check out requested revision." \
-                  " Staying on default branch.", style='red')
+            click.ClickException("Failed to check out requested revision.")
     else:
         lCloneArgs = ['clone', repo]
 
