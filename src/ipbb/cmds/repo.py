@@ -284,24 +284,13 @@ def git(ictx, repo, branch_or_tag, revision, dest, depth):
             )
         )
 
-    lCloneArgs = ['clone', repo]
-
-    if dest is not None:
-        lCloneArgs += [dest]
-
-    if depth is not None:
-        lCloneArgs += [f'--depth={depth}']
-
     # NOTE: The mutual exclusivity of checking out a branch and
     # checkout out a revision should have been handled at the CLI
     # option handling stage.
-    if branch_or_tag is not None:
-        cprint(f'Cloning branch/tag [blue]{branch_or_tag}[/blue]')
-        sh.git(*lCloneArgs, f'--branch={branch_or_tag}', _out=sys.stdout, _cwd=ictx.srcdir)
-
-    elif revision is not None:
-        sh.git(*lCloneArgs, _out=sys.stdout, _cwd=ictx.srcdir)
-        cprint('Checking out revision [blue]{}[/blue]'.format(revision))
+    if revision is not None:
+        sh.git('init', lRepoName, _out=sys.stdout, _cwd=ictx.srcdir)
+        sh.git('remote', 'add', 'origin', repo, _out=sys.stdout, _cwd=lRepoLocalPath)
+        cprint('Fetching & checking out revision [blue]{}[/blue]'.format(revision))
         try:
             lFetchArgs = ['fetch', 'origin', revision, '-q']
             if depth is not None:
@@ -309,12 +298,25 @@ def git(ictx, repo, branch_or_tag, revision, dest, depth):
             sh.git(*lFetchArgs, _out=sys.stdout, _cwd=lRepoLocalPath)
             sh.git('checkout', revision, '-q', _out=sys.stdout, _cwd=lRepoLocalPath)
         except Exception as err:
-            # NOTE: The assumption here is that the failed checkout
-            # did not alter the state of the cloned repo in any
-            # way. (This appears to be the case from experience but no
-            # hard reference could be found.)
-            cprint("Failed to check out requested revision." \
-                  " Staying on default branch.", style='red')
+            if len(revision) < 40:
+                raise click.ClickException("Failed to check out requested revision. Please provide the full commit SHA (40 chars)")
+            else:
+                raise click.ClickException("Failed to check out requested revision.")
+    else:
+        lCloneArgs = ['clone', repo]
+
+        if dest is not None:
+            lCloneArgs += [dest]
+
+        if depth is not None:
+            lCloneArgs += [f'--depth={depth}']
+
+        if branch_or_tag is None:
+            cprint(f'Cloning default branch')
+        else:
+            lCloneArgs.append(f'--branch={branch_or_tag}')
+            cprint(f'Cloning branch/tag [blue]{branch_or_tag}[/blue]')
+        sh.git(*lCloneArgs, _out=sys.stdout, _cwd=ictx.srcdir)
 
     cprint(
         'Repository \'{}\' successfully cloned to:\n  {}'.format(
