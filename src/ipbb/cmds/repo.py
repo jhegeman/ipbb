@@ -284,20 +284,15 @@ def git(ictx, repo, branch_or_tag, revision, dest, depth):
             )
         )
 
-    lCloneArgs = ['clone', repo]
-
-    if dest is not None:
-        lCloneArgs += [dest]
-
-    if depth is not None:
-        lCloneArgs += [f'--depth={depth}']
-
     # NOTE: The mutual exclusivity of checking out a branch and
     # checkout out a revision should have been handled at the CLI
     # option handling stage.
     if revision is not None:
-        sh.git(*lCloneArgs, _out=sys.stdout, _cwd=ictx.srcdir)
-        cprint('Checking out revision [blue]{}[/blue]'.format(revision))
+        if dest is None:
+            dest = pathlib.Path(repo).stem
+        sh.git('init', dest, _out=sys.stdout, _cwd=ictx.srcdir)
+        sh.git('remote', 'add', repo, _out=sys.stdout, _cwd=ictx.srcdir)
+        cprint('Fetching & checking out revision [blue]{}[/blue]'.format(revision))
         try:
             lFetchArgs = ['fetch', 'origin', revision, '-q']
             if depth is not None:
@@ -312,6 +307,14 @@ def git(ictx, repo, branch_or_tag, revision, dest, depth):
             cprint("Failed to check out requested revision." \
                   " Staying on default branch.", style='red')
     else:
+        lCloneArgs = ['clone', repo]
+
+        if dest is not None:
+            lCloneArgs += [dest]
+
+        if depth is not None:
+            lCloneArgs += [f'--depth={depth}']
+
         if branch_or_tag is None:
             cprint(f'Cloning default branch')
         else:
