@@ -22,7 +22,7 @@ from .dep import hash
 
 from ..console import cprint, console
 from ..utils import which, SmartOpen, mkdir
-from ..utils import ensureNoParsingErrors, ensureNoMissingFiles, logVivadoConsoleError, warning_notice
+from ..utils import ensureNoParsingErrors, ensureNoMissingFiles, logVivadoConsoleError, echoVivadoSimulationError, warning_notice
 
 from ..generators.vivadoproject import VivadoProjectGenerator
 from ..tools.xilinx import VivadoSession, VivadoSessionManager, VivadoConsoleError, VivadoSnoozer, VivadoProject
@@ -179,7 +179,7 @@ def genproject(ictx, aEnableIPCache, aOptimise, aToScript, aToStdout):
         raise click.Abort()
     except RuntimeError as lExc:
         cprint(
-            "Error caught while generating Vivado TCL commands:",
+            "Error caught while generating Vivado TCL commands:\n" + str(lExc) + "\n",
             style='red'
         )
         cprint(lExc)
@@ -223,6 +223,50 @@ def checksyntax(ictx):
     console.log(
         "\n{}: Syntax check completed successfully.\n".format(ictx.currentproj.name),
         style='green',
+    )
+
+# ------------------------------------------------------------------------------
+def runsimulation(env):
+
+    lSessionId = 'run-sim'
+
+    lStopOn = []
+
+    # Check that the project exists
+    ensureVivadoProjPath(env.vivadoProjFile)
+
+    # And that the Vivado env is up
+    ensureVivado(env)
+
+    try:
+        with env.vivadoSessions.get(lSessionId) as lConsole:
+            # Open the project
+            lProject = VivadoProject(lConsole, env.vivadoProjFile)
+
+            # Change message severity to ERROR for the issues we're interested in
+            lConsole.changeMsgSeverity(lStopOn, 'ERROR')
+
+            # Execute the behavioral simulation
+            lConsole('set_property target_simulator "XSim" [current_project]')
+            sim_output = lConsole('launch_simulation -mode "behavioral"', aMaxLen=None)
+
+    except VivadoConsoleError as lExc:
+        echoVivadoConsoleError(lExc)
+        raise click.Abort()
+
+    # Now dig through the simulation log for failures.
+    # This assumes that simulation issues are reported using the VHDL
+    # 'report "XXX" severity failure'.
+    sim_failures = [i for i in sim_output if (i.lower().find("failure") > -1)]
+    sim_failure_detected = len(sim_failures) > 0
+    if sim_failure_detected:
+        failure_strings = ["  {0:s}".format(i) for i in sim_failures]
+        echoVivadoSimulationError(failure_strings)
+        raise click.Abort()
+
+    secho(
+        "\n{}: Behavioral simulation completed successfully.\n".format(env.currentproj.name),
+        fg='green',
     )
 
 # -------------------------------------
