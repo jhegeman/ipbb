@@ -182,8 +182,12 @@ class DepCmdParser(argparse.ArgumentParser):
         subp.add_argument('-c', '--component', **lCompArgOpts)
         # subp.add_argument('-l', '--lib')
         subp.add_argument('--cd')
-        # subp.add_argument('--vhdl2008', action='store_true')
-        # subp.add_argument('-u', '--usein', action=UseInAction)
+        vhdl_std_group = subp.add_mutually_exclusive_group()
+        vhdl_std_group.add_argument('--vhdl2008', action='store_true', default=None)
+        vhdl_std_group.add_argument('--vhdl2019', action='store_true', default=None)
+        subp.add_argument('-u', '--usein', action=UseInAction)
+        subp.add_argument('-f', '--usefor', action=UseForAction)
+        subp.add_argument('--simflags')
         subp.add_argument('file', nargs='+')
 
         self.creators = {
@@ -192,7 +196,7 @@ class DepCmdParser(argparse.ArgumentParser):
             'hlssrc'  : lambda a : HlsSrcCommand(a.cmd, a.file, a.component[0], a.component[1], a.cd, a.cflags, a.csimflags, a.tb, a.include_comp),
             'setup'   : lambda a : SetupCommand(a.cmd, a.file, a.component[0], a.component[1], a.cd, a.finalise),
             'addrtab' : lambda a : AddrtabCommand(a.cmd, a.file, a.component[0], a.component[1], a.cd, a.toplevel),
-            'tb'      : lambda a : SrcCommand(a.cmd, a.file, a.component[0], a.component[1], a.cd, None, None, True, True),
+            'tb'      : lambda a : SrcCommand(a.cmd, a.file, a.component[0], a.component[1], a.cd, None, a.vhdl2008, a.vhdl2019, 'synth' in a.usein, 'sim' in a.usein, a.usefor, a.simflags),
             '*'       : lambda a : Command(a.cmd, a.file, a.component[0], a.component[1], a.cd),
         }
 

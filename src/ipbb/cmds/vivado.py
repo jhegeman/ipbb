@@ -22,7 +22,7 @@ from .dep import hash
 
 from ..console import cprint, console
 from ..utils import which, SmartOpen, mkdir
-from ..utils import ensureNoParsingErrors, ensureNoMissingFiles, logVivadoConsoleError, echoVivadoSimulationError, warning_notice
+from ..utils import ensureNoParsingErrors, ensureNoMissingFiles, logVivadoConsoleError, logVivadoSimulationError, warning_notice
 
 from ..generators.vivadoproject import VivadoProjectGenerator
 from ..tools.xilinx import VivadoSession, VivadoSessionManager, VivadoConsoleError, VivadoSnoozer, VivadoProject
@@ -226,22 +226,22 @@ def checksyntax(ictx):
     )
 
 # ------------------------------------------------------------------------------
-def runsimulation(env):
+def runsimulation(ictx):
 
     lSessionId = 'run-sim'
 
     lStopOn = []
 
     # Check that the project exists
-    ensureVivadoProjPath(env.vivadoProjFile)
+    ensure_vivado_project_path(ictx.vivadoProjFile)
 
-    # And that the Vivado env is up
-    ensureVivado(env)
+    # And that the Vivado ictx is up
+    ensure_vivado(ictx)
 
     try:
-        with env.vivadoSessions.get(lSessionId) as lConsole:
+        with ictx.vivadoSessions.getctx(lSessionId) as lConsole:
             # Open the project
-            lProject = VivadoProject(lConsole, env.vivadoProjFile)
+            lProject = VivadoProject(lConsole, ictx.vivadoProjFile)
 
             # Change message severity to ERROR for the issues we're interested in
             lConsole.changeMsgSeverity(lStopOn, 'ERROR')
@@ -251,7 +251,7 @@ def runsimulation(env):
             sim_output = lConsole('launch_simulation -mode "behavioral"', aMaxLen=None)
 
     except VivadoConsoleError as lExc:
-        echoVivadoConsoleError(lExc)
+        logVivadoConsoleError(lExc)
         raise click.Abort()
 
     # Now dig through the simulation log for failures.
@@ -261,12 +261,12 @@ def runsimulation(env):
     sim_failure_detected = len(sim_failures) > 0
     if sim_failure_detected:
         failure_strings = ["  {0:s}".format(i) for i in sim_failures]
-        echoVivadoSimulationError(failure_strings)
+        logVivadoSimulationError(failure_strings)
         raise click.Abort()
 
-    secho(
-        "\n{}: Behavioral simulation completed successfully.\n".format(env.currentproj.name),
-        fg='green',
+    console.log(
+        f"{ictx.currentproj.name}: Behavioural simulation completed successfully.",
+        style='green',
     )
 
 # -------------------------------------

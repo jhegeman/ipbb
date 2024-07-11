@@ -251,6 +251,11 @@ def logVivadoConsoleError( aExc ):
     console.log("\n".join(aExc.errors), markup=False, style='red')
     console.log("\n".join(aExc.criticalWarns), markup=False, style='yellow')    
 
+# ------------------------------------------------------------------------------
+def logVivadoSimulationError( aMsg ):
+    console.log("Vivado simulation failure(s) detected\n", style='red')
+    console.log("\n".join(aMsg), style='red')
+
 
 # ------------------------------------------------------------------------------
 
