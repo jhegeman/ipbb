@@ -197,7 +197,7 @@ def checksyntax(ictx):
 
     lSessionId = 'chk-syn'
 
-    lStopOn = ['HDL 9-806', 'HDL 9-69', 'HDL 9-3136', 'HDL 9-1752' ]  # Syntax errors  # Type not declared # object not declared # found 0 definitions of operator...
+    lStopOn = ['HDL 9-806', 'HDL 9-69', 'HDL 9-3136', 'HDL 9-1752', 'HDL 9-1206']  # Syntax errors  # Type not declared # object not declared # found 0 definitions of operator...
 
     # Check that the project exists 
     ensure_vivado_project_path(ictx.vivadoProjFile)
