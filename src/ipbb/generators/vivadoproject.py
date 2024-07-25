@@ -151,8 +151,6 @@ class VivadoProjectGenerator(object):
                 f = src.filepath
                 lCommands += [(t, c, f)]
 
-                print("DEBUG JGH " + f + " -> " + c)
-
                 if ext in ('.vhd', '.vhdl') and (src.vhdl2008 or src.vhdl2019) :
                     t = 'prop'
                     c = 'set_property FILE_TYPE {VHDL ' + ('2019' if src.vhdl2019 else '2008') + '} [get_files {$files}]'
