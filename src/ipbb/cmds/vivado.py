@@ -198,15 +198,15 @@ def checksyntax(ictx):
     lSessionId = 'chk-syn'
 
     lStopOn = [
-        'HDL 9-806',
-        'HDL 9-69',
-        'HDL 9-3136',
-        'HDL 9-1752',
         'HDL 9-1206',
         'HDL 9-1314',
-        'HDL 9-3500',
+        'HDL 9-1752',
         'HDL 9-1797',
+        'HDL 9-3136',
+        'HDL 9-3500',
         'HDL 9-3907',
+        'HDL 9-69',
+        'HDL 9-806',
     ]  # Various syntax errors.
 
     # Check that the project exists 
