@@ -205,6 +205,8 @@ def checksyntax(ictx):
         'HDL 9-1206',
         'HDL 9-1314',
         'HDL 9-3500',
+        'HDL 9-1797',
+        'HDL 9-3907',
     ]  # Various syntax errors.
 
     # Check that the project exists 
