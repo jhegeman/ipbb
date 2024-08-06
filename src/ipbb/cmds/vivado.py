@@ -204,6 +204,7 @@ def checksyntax(ictx):
         'HDL 9-1797',
         'HDL 9-3136',
         'HDL 9-3500',
+        'HDL 9-3609',
         'HDL 9-3907',
         'HDL 9-69',
         'HDL 9-806',
