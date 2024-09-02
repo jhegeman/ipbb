@@ -3,4 +3,4 @@ dep_file_types = {
     '.d3': {'fwd': True},
 }
 
-dep_command_types = ('setup', 'util', 'src', 'hlssrc', 'addrtab', 'iprepo')
+dep_command_types = ('setup', 'util', 'src', 'hlssrc', 'addrtab', 'iprepo', 'tb')

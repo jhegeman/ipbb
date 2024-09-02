@@ -75,6 +75,17 @@ def checksyntax(ictx, *args, **kwargs):
     return (ictx.command.name, checksyntax, args, kwargs)
 
 
+# ------------------------------------------------------------------------------
+@vivado.command('simulate', short_help='Run behavioral simulation on the current project.')
+@click.pass_obj
+@click.pass_context
+def checksyntax(ctx, *args, **kwargs):
+    """Run Vivado behavioral simulation on current project
+    """
+    from ..cmds.vivado import runsimulation
+    return (ctx.command.name, runsimulation, args, kwargs)
+
+
 # -------------------------------------
 @vivado.command('synth', short_help='Run the synthesis step on the current project.')
 @click.option('-j', '--jobs', 'aNumJobs', type=int, default=None, help="Number of parallel jobs")

@@ -17,6 +17,7 @@ class Pathmaker(object):
         'setup': 'firmware/cfg',
         'util': 'firmware/cfg',
         'iprepo': 'firmware/cgn',
+        'tb': 'firmware/test',
     }
     fexts = {
         # 'src': 'vhd',

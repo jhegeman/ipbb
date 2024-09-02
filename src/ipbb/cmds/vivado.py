@@ -22,7 +22,7 @@ from .dep import hash
 
 from ..console import cprint, console
 from ..utils import which, SmartOpen, mkdir
-from ..utils import ensureNoParsingErrors, ensureNoMissingFiles, logVivadoConsoleError, warning_notice
+from ..utils import ensureNoParsingErrors, ensureNoMissingFiles, logVivadoConsoleError, logVivadoSimulationError, warning_notice
 
 from ..generators.vivadoproject import VivadoProjectGenerator
 from ..tools.xilinx import VivadoSession, VivadoSessionManager, VivadoConsoleError, VivadoSnoozer, VivadoProject
@@ -179,7 +179,7 @@ def genproject(ictx, aEnableIPCache, aOptimise, aToScript, aToStdout):
         raise click.Abort()
     except RuntimeError as lExc:
         cprint(
-            "Error caught while generating Vivado TCL commands:",
+            "Error caught while generating Vivado TCL commands:\n" + str(lExc) + "\n",
             style='red'
         )
         cprint(lExc)
@@ -197,7 +197,19 @@ def checksyntax(ictx):
 
     lSessionId = 'chk-syn'
 
-    lStopOn = ['HDL 9-806', 'HDL 9-69', 'HDL 9-3136', 'HDL 9-1752' ]  # Syntax errors  # Type not declared # object not declared # found 0 definitions of operator...
+    lStopOn = [
+        'HDL 9-1206',
+        'HDL 9-1314',
+        'HDL 9-1752',
+        'HDL 9-1797',
+        'HDL 9-3136',
+        'HDL 9-3314',
+        'HDL 9-3500',
+        'HDL 9-3609',
+        'HDL 9-3907',
+        'HDL 9-69',
+        'HDL 9-806',
+    ]  # Various syntax errors.
 
     # Check that the project exists 
     ensure_vivado_project_path(ictx.vivadoProjFile)
@@ -222,6 +234,50 @@ def checksyntax(ictx):
 
     console.log(
         "\n{}: Syntax check completed successfully.\n".format(ictx.currentproj.name),
+        style='green',
+    )
+
+# ------------------------------------------------------------------------------
+def runsimulation(ictx):
+
+    lSessionId = 'run-sim'
+
+    lStopOn = []
+
+    # Check that the project exists
+    ensure_vivado_project_path(ictx.vivadoProjFile)
+
+    # And that the Vivado ictx is up
+    ensure_vivado(ictx)
+
+    try:
+        with ictx.vivadoSessions.getctx(lSessionId) as lConsole:
+            # Open the project
+            lProject = VivadoProject(lConsole, ictx.vivadoProjFile)
+
+            # Change message severity to ERROR for the issues we're interested in
+            lConsole.changeMsgSeverity(lStopOn, 'ERROR')
+
+            # Execute the behavioral simulation
+            lConsole('set_property target_simulator "XSim" [current_project]')
+            sim_output = lConsole('launch_simulation -mode "behavioral"', aMaxLen=None)
+
+    except VivadoConsoleError as lExc:
+        logVivadoConsoleError(lExc)
+        raise click.Abort()
+
+    # Now dig through the simulation log for failures.
+    # This assumes that simulation issues are reported using the VHDL
+    # 'report "XXX" severity failure'.
+    sim_failures = [i for i in sim_output if (i.lower().find("failure") > -1)]
+    sim_failure_detected = len(sim_failures) > 0
+    if sim_failure_detected:
+        failure_strings = ["  {0:s}".format(i) for i in sim_failures]
+        logVivadoSimulationError(failure_strings)
+        raise click.Abort()
+
+    console.log(
+        f"{ictx.currentproj.name}: Behavioural simulation completed successfully.",
         style='green',
     )
 
