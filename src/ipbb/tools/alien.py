@@ -78,14 +78,7 @@ class AlienBranch(object):
         return str({ k: v for k, v in self.__dict__.items() if not k.startswith('_')})
 
     def __getattr__(self, name):
-        try:
-            return self.__dict__[name]
-        except KeyError:
-            if self._locked or name.startswith('__'):
-                raise
-            else:
-                value = self.__dict__[name] = type(self)()
-                return value
+        return self.__dict__[name]
 
     def __setattr__(self, name, value):
         if name not in self.__dict__ and name.startswith('_'):
@@ -105,7 +98,11 @@ class AlienBranch(object):
         if len(tokens) == 1:
             setattr(self, name, value)
         else:
-            setattr(self[tokens[0]], tokens[1], value)
+            try:
+                setattr(self[tokens[0]], tokens[1], value)
+            except KeyError:
+                self[tokens[0]] = type(self)()
+                setattr(self[tokens[0]], tokens[1], value)
 
     def __iter__(self):
         for b, o in self.__dict__.items():
