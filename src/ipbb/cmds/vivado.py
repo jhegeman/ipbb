@@ -46,6 +46,7 @@ _memCfgKinds = {
 }
 
 _svfSettingName = 'svf_jtagchain_devices'
+_xsaSettingName = 'create_xsa'
 
 
 _rum_synth = 'synth_1'
@@ -582,6 +583,55 @@ def _svffile(ictx):
 
 
 # ------------------------------------------------------------------------------
+def _xsafile(ictx):
+    '''Create a Xilinx Support Archive (XSA) file
+
+    Enabled by setting vivado.create_xsa to True in the depfile
+    '''
+    lSessionId = 'xsafile'
+
+    # Check that the project exists
+    ensure_vivado_project_path(ictx.vivadoProjFile)
+
+    lProjName = ictx.currentproj.name
+    lDepFileParser = ictx.depParser
+    lBaseName = ictx.vivadoProdFileBase
+
+    # Return early if XSA not requested
+    if ('vivado' not in lDepFileParser.settings) or not lDepFileParser.settings['vivado'].get(_xsaSettingName, False):
+        cprint('XSA file not requested for this project. Exiting.', style='yellow')
+        return
+
+    lBitPath = lBaseName + '.bit'
+    if not exists(lBitPath):
+        raise click.ClickException("Bitfile does not exist. Can't create XSA file.")
+
+    # Check that that the Vivado ictx is up
+    ensure_vivado(ictx)
+
+    # Define & execute the TCL commands
+    lXSAPath = lBaseName + '.xsa'
+    lTclCommands = [f'write_hw_platform -fixed -include_bit -force -file {lXSAPath}']
+
+    # Execute the TCL commands
+    try:
+        with ictx.vivadoSessions.getctx(lSessionId) as lConsole:
+
+            lProject = VivadoProject(lConsole, ictx.vivadoProjFile)
+            for c in lTclCommands:
+                lConsole(c)
+
+    except VivadoConsoleError as lExc:
+        logVivadoConsoleError(lExc)
+        raise click.Abort()
+
+    console.log(
+        f"{ictx.currentproj.name}: XSA file successfully written.",
+        style='green'
+    )
+
+
+# ------------------------------------------------------------------------------
 def debugprobes(ictx):
     '''Generate (optional) debug-probes files (used for ILAs and VIO controls).'''
 
@@ -838,6 +888,17 @@ def package(ictx, aTag):
                 _svffile(ictx)
     except KeyError as e:
         lSVFPath = None
+
+    # Create XSA file if requested (XSA = Xilinx Support Archive. AMD hardware design, for use by Vitis)
+    lXSAPath = None
+    try:
+        lVivadoCfg = lDepFileParser.settings['vivado']
+        if lVivadoCfg.get(_xsaSettingName, False):
+            lXSAPath = lBaseName + '.xsa'
+            if not exists(lXSAPath):
+                _xsafile(ictx)
+    except KeyError as e:
+        lXSAPath = None
 
     # Create configuration memory files if requested and missing
     try:
