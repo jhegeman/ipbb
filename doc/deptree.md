@@ -75,7 +75,8 @@ Describe the use of variables in relation to the script makers and as a way to s
 * `vivado.sim_top_entity` (`str`): Name of simulation top-entity in vivado
 * `vivado.binfile_options` (`str`): Bin file generation specific options
 * `vivado.mcsfile_options` (`str`): MCS file generation specific options
-* `vivado.svf_jtagchain_devices` (): 
+* `vivado.svf_jtagchain_devices` ():
+* `vivado.create_xsa` (`bool`): Create an XSA file
 
 ### VitisHLS
 
