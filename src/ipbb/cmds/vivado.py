@@ -902,6 +902,11 @@ def package(ictx, aTag):
     except KeyError as e:
         lSVFPath = None
 
+    # Detect XSA file
+    lXSAPath = lBaseName + '.xsa'
+    if not exists(lXSAPath):
+        lXSAPath = None
+
     # Create configuration memory files if requested and missing
     try:
         lVivadoCfg = lDepFileParser.settings['vivado']
@@ -961,6 +966,10 @@ def package(ictx, aTag):
     if lSVFPath is not None:
         console.log("Collecting SVF file {}".format(lSVFPath), style='blue')
         sh.cp('-av', lSVFPath, lPkgSrcPath, _out=sys.stdout)
+
+    if lXSAPath is not None:
+        console.log("Collecting XSA file {}".format(lXSAPath), style='blue')
+        sh.cp('-av', lXSAPath, lPkgSrcPath, _out=sys.stdout)
 
     for f in lMemCfgFiles:
         console.log("Collecting memcfg {}".format(f), style='blue')
